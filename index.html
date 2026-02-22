@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Plan Festival</title>
+
+<style>
+body{
+margin:0;
+overflow:hidden;
+background:black;
+font-family:Arial;
+}
+
+#map{
+width:100vw;
+height:100vh;
+overflow:hidden;
+touch-action:none;
+position:relative;
+}
+
+#image{
+position:absolute;
+top:0;
+left:0;
+transform-origin:0 0;
+}
+
+#image img{
+width:1500px;
+pointer-events:none;
+user-select:none;
+}
+
+#user{
+position:absolute;
+width:50px;
+height:50px;
+transform:translate(-50%,-50%);
+}
+
+#arrow{
+width:0;
+height:0;
+border-left:18px solid transparent;
+border-right:18px solid transparent;
+border-bottom:36px solid #00e1ff;
+filter:drop-shadow(0 0 15px cyan);
+}
+
+#center{
+position:absolute;
+bottom:20px;
+right:20px;
+padding:14px 20px;
+background:white;
+border-radius:12px;
+font-weight:bold;
+box-shadow:0 0 15px black;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="map">
+<div id="image">
+<img src="carte-fete.png">
+<div id="user"><div id="arrow"></div></div>
+</div>
+<div id="center">Me recentrer</div>
+</div>
+
+<script>
+
+let scale=1,posX=0,posY=0;
+let image=document.getElementById("image");
+
+function update(){
+image.style.transform="translate("+posX+"px,"+posY+"px) scale("+scale+")";
+}
+
+document.getElementById("map").addEventListener("wheel",(e)=>{
+e.preventDefault();
+scale+=e.deltaY*-0.001;
+scale=Math.min(Math.max(.6,scale),5);
+update();
+});
+
+/* GPS */
+
+navigator.geolocation.watchPosition((pos)=>{
+
+let lat=pos.coords.latitude;
+let lon=pos.coords.longitude;
+
+/* 🔥 A MODIFIER AVEC TES COORDONNÉES 🔥 */
+
+let latTop=46.379657;
+let latBottom=46.378555;
+let lonLeft=46.379161;
+let lonRight=46.379163;
+
+/* Conversion */
+
+let x=(lon-lonLeft)/(lonRight-lonLeft);
+let y=(latTop-lat)/(latTop-latBottom);
+
+let img=document.querySelector("#image img");
+
+let largeur=img.clientWidth;
+let hauteur=img.clientHeight;
+
+let user=document.getElementById("user");
+
+user.style.left=(x*largeur)+"px";
+user.style.top=(y*hauteur)+"px";
+
+},{enableHighAccuracy:true,maximumAge:0});
+
+/* Orientation */
+
+if(window.DeviceOrientationEvent){
+window.addEventListener("deviceorientation",(event)=>{
+let heading=event.alpha;
+if(heading){
+document.getElementById("arrow").style.transform="rotate("+heading+"deg)";
+}
+});
+}
+
+/* Recentrer */
+
+document.getElementById("center").onclick=()=>{
+scale=1;
+posX=0;
+posY=0;
+update();
+};
+
+</script>
+</body>
+</html>
